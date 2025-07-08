@@ -21,7 +21,7 @@ func (f roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 func main() {
-	target := "http://localhost:8080" // Upstream server
+	target := "http://local-ai.local-ai.svc.cluster.local:80" // Upstream server
 	upstream, err := url.Parse(target)
 	if err != nil {
 		log.Fatalf("Invalid upstream URL: %v", err)
@@ -54,7 +54,14 @@ func main() {
 		case "/api/tags":
 			req.URL.Path = "/v1/models"
 		case "/api/chat":
-			req.URL.Path = "/v1/chat/completions"
+			// Redirect /api/chat to the upstream target
+			return &http.Response{
+				StatusCode: http.StatusTemporaryRedirect,
+				Header:     http.Header{"Location": []string{target + "/v1/chat/completions"}},
+				Body:       io.NopCloser(bytes.NewBuffer(nil)),
+				Request:    req,
+			}, nil
+			// req.URL.Path = "/v1/chat/completions"
 		}
 
 		// Call the upstream server
