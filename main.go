@@ -82,7 +82,7 @@ func main() {
 			}
 
 			// Log the response body
-			log.Printf("Response body: %s", jsonResponse)
+			log.Printf("Response body: %s", string(jsonResponse))
 
 			// Reassign the body to the response
 			response.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
