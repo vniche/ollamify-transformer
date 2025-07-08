@@ -56,38 +56,11 @@ func main() {
 		case "/api/chat":
 			req.URL.Path = "/v1/chat/completions"
 		}
-		// You can modify the request here if needed
-		// For example, add a custom header
-		if originalPath == "/api/tags" {
-
-		}
-		// req.Header.Set("X-Forwarded-For", "GoProxy")
 
 		// Call the upstream server
 		response, err := http.DefaultTransport.RoundTrip(req)
 		if err != nil {
 			return nil, fmt.Errorf("error making request to upstream: %w", err)
-		}
-
-		if originalPath == "/api/chat" {
-			bodyBytes, err := io.ReadAll(response.Body)
-			if err != nil {
-				return nil, fmt.Errorf("error reading response body: %w", err)
-			}
-			defer response.Body.Close()
-
-			jsonResponse, err := json.MarshalIndent(bodyBytes, "", "   ")
-			if err != nil {
-				return nil, fmt.Errorf("error marshaling response body to JSON: %w", err)
-			}
-
-			// Log the response body
-			log.Printf("Response body: %s", string(jsonResponse))
-
-			// Reassign the body to the response
-			response.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-			response.ContentLength = int64(len(bodyBytes))
-			response.Header.Set("Content-Length", strconv.Itoa(len(bodyBytes)))
 		}
 
 		if originalPath == "/api/tags" {
@@ -114,6 +87,20 @@ func main() {
 			response.Body = io.NopCloser(bytes.NewBuffer(jsonData))
 			response.ContentLength = int64(len(jsonData))
 			response.Header.Set("Content-Length", strconv.Itoa(len(jsonData)))
+		} else {
+			bodyBytes, err := io.ReadAll(response.Body)
+			if err != nil {
+				return nil, fmt.Errorf("error reading response body: %w", err)
+			}
+			defer response.Body.Close()
+
+			// jsonResponse, err := json.MarshalIndent(bodyBytes, "", "   ")
+			// if err != nil {
+			// 	return nil, fmt.Errorf("error marshaling response body to JSON: %w", err)
+			// }
+
+			// Log the response body
+			log.Printf("Response body: %s", string(bodyBytes))
 		}
 
 		return response, nil
