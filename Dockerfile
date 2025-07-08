@@ -1,4 +1,4 @@
-FROM arm64v8/golang:1 AS builder
+FROM arm64v8/golang:1.23-bullseye AS builder
 
 WORKDIR /app
 COPY . .
