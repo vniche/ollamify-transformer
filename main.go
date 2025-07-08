@@ -32,6 +32,21 @@ func main() {
 	proxy.Transport = roundTripperFunc(func(req *http.Request) (*http.Response, error) {
 		log.Printf("Proxying request: %s %s%s", req.Method, req.Host, req.URL.RequestURI())
 
+		if req.Body != nil {
+			bodyBytes, err := io.ReadAll(req.Body)
+			if err != nil {
+				log.Printf("Error reading request body: %v", err)
+			} else if len(bodyBytes) > 0 {
+				var prettyJSON bytes.Buffer
+				if json.Indent(&prettyJSON, bodyBytes, "", "   ") == nil {
+					log.Printf("Request body:\n%s", prettyJSON.Bytes())
+				} else {
+					log.Printf("Request body (raw):\n%s", bodyBytes)
+				}
+			}
+			req.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+		}
+
 		originalPath := req.URL.Path
 
 		switch originalPath {
