@@ -13,7 +13,7 @@ env:
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
   build-and-push-image:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
       contents: read
@@ -44,7 +44,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/arm64/v8
+          platforms: linux/amd64
           context: .
           file: ./Dockerfile
           push: true
