@@ -30,15 +30,21 @@ func main() {
 	proxy := httputil.NewSingleHostReverseProxy(upstream)
 
 	proxy.Transport = roundTripperFunc(func(req *http.Request) (*http.Response, error) {
-		// Log the request URL
-		// fmt.Printf("Request URL: %s\n", req.URL.String())
+		log.Printf("Proxying request: %s %s%s", req.Method, req.Host, req.URL.RequestURI())
 
 		originalPath := req.URL.Path
 
+		switch originalPath {
+		default:
+		case "/api/tags":
+			req.URL.Path = "/v1/models"
+		case "/api/chat":
+			req.URL.Path = "/v1/chat/completions"
+		}
 		// You can modify the request here if needed
 		// For example, add a custom header
 		if originalPath == "/api/tags" {
-			req.URL.Path = "/v1/models"
+
 		}
 		// req.Header.Set("X-Forwarded-For", "GoProxy")
 
