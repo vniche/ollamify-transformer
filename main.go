@@ -54,6 +54,27 @@ func main() {
 			return nil, fmt.Errorf("error making request to upstream: %w", err)
 		}
 
+		if originalPath == "/api/chat" {
+			bodyBytes, err := io.ReadAll(response.Body)
+			if err != nil {
+				return nil, fmt.Errorf("error reading response body: %w", err)
+			}
+			defer response.Body.Close()
+
+			jsonResponse, err := json.MarshalIndent(bodyBytes, "", "   ")
+			if err != nil {
+				return nil, fmt.Errorf("error marshaling response body to JSON: %w", err)
+			}
+
+			// Log the response body
+			log.Printf("Response body: %s", jsonResponse)
+
+			// Reassign the body to the response
+			response.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+			response.ContentLength = int64(len(bodyBytes))
+			response.Header.Set("Content-Length", strconv.Itoa(len(bodyBytes)))
+		}
+
 		if originalPath == "/api/tags" {
 			openAIresponse := new(OpenAIResponse)
 			if err = json.NewDecoder(response.Body).Decode(openAIresponse); err != nil {
